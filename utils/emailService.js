@@ -129,7 +129,7 @@ exports.sendVerificationEmail = async (email, nombre, codigo) => {
                   <tr>
                     <td style="background-color: #f8f9fa; padding: 20px; text-align: center;">
                       <p style="font-size: 12px; color: #6c757d; margin: 0;">
-                        © 2025 Tu App. Todos los derechos reservados.
+                        © 2025 Euro Padel. Todos los derechos reservados.
                       </p>
                     </td>
                   </tr>
@@ -203,7 +203,7 @@ exports.sendRecoveryEmail = async (email, nombre, codigo) => {
 
     const mailOptions = {
       from: {
-        name: 'Tu App',
+        name: 'Euro Padel',
         address: process.env.AppGmail
       },
       to: email,
@@ -251,7 +251,7 @@ exports.sendRecoveryEmail = async (email, nombre, codigo) => {
                   <tr>
                     <td style="background-color: #f8f9fa; padding: 20px; text-align: center;">
                       <p style="font-size: 12px; color: #6c757d; margin: 0;">
-                        © 2025 Tu App. Todos los derechos reservados.
+                        © 2025 Euro Padel. Todos los derechos reservados.
                       </p>
                     </td>
                   </tr>
@@ -289,4 +289,180 @@ exports.sendRecoveryEmail = async (email, nombre, codigo) => {
       throw new Error(`Error al enviar email: ${error.message}`);
     }
   }
+};
+
+
+
+
+
+
+
+
+// ============================================
+// 📧 Función para enviar email de confirmación de cambio
+// ============================================
+exports.sendPasswordChangedEmail = async (email, nombre, details) => {
+  console.log('📧 Enviando email de confirmación a:', email);
+  console.log('📋 Detalles del dispositivo:', details);
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: '🔐 Contraseña actualizada - Confirmación de cambio',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+          .content { padding: 30px; }
+          .info-box { background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 4px; }
+          .info-item { margin: 10px 0; color: #333; }
+          .info-label { font-weight: bold; color: #667eea; }
+          .warning-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
+          .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+          .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔐 Contraseña Actualizada</h1>
+          </div>
+          <div class="content">
+            <p>Hola <strong>${nombre}</strong>,</p>
+            <p>Te confirmamos que tu contraseña ha sido actualizada exitosamente.</p>
+            
+            <div class="info-box">
+              <h3 style="margin-top: 0; color: #667eea;">📋 Detalles del cambio:</h3>
+              <div class="info-item">
+                <span class="info-label">📅 Fecha:</span> ${details.fecha}
+              </div>
+              <div class="info-item">
+                <span class="info-label">⏰ Hora:</span> ${details.hora}
+              </div>
+              <div class="info-item">
+                <span class="info-label">📍 Ubicación:</span> ${details.ubicacion}
+              </div>
+              <div class="info-item">
+                <span class="info-label">💻 Dispositivo:</span> ${details.dispositivo}
+              </div>
+              <div class="info-item">
+                <span class="info-label">🌐 Navegador:</span> ${details.navegador}
+              </div>
+              <div class="info-item">
+                <span class="info-label">🔢 IP:</span> ${details.ip}
+              </div>
+            </div>
+
+            <div class="warning-box">
+              <p style="margin: 0; color: #856404;">
+                <strong>⚠️ ¿No fuiste tú?</strong><br>
+                Si no realizaste este cambio, tu cuenta podría estar comprometida. 
+                Por favor, contacta inmediatamente con nuestro equipo de soporte.
+              </p>
+            </div>
+
+            <p>Ya puedes iniciar sesión con tu nueva contraseña.</p>
+            
+            <center>
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/login" class="button">Iniciar Sesión</a>
+            </center>
+          </div>
+          <div class="footer">
+            <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+            <p>© ${new Date().getFullYear()} Tu Empresa. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Email enviado correctamente:', info.messageId);
+    return true;
+  } catch (error) {
+    console.error('❌ Error al enviar email:', error);
+    throw error;
+  }
+};
+
+// ============================================
+// 🔍 Función para obtener detalles del dispositivo
+// ============================================
+exports.getDeviceDetails = (req) => {
+  console.log('🔍 Obteniendo detalles del dispositivo...');
+  console.log('User-Agent:', req.headers['user-agent']);
+  console.log('IP desde headers:', req.headers['x-forwarded-for']);
+  console.log('IP desde connection:', req.connection?.remoteAddress);
+  console.log('IP desde socket:', req.socket?.remoteAddress);
+
+  const userAgent = req.headers['user-agent'] || '';
+  const ip = req.headers['x-forwarded-for'] || 
+             req.connection?.remoteAddress || 
+             req.socket?.remoteAddress || 
+             'IP no disponible';
+  
+  // Detectar dispositivo
+  let dispositivo = 'Dispositivo desconocido';
+  if (/mobile/i.test(userAgent)) {
+    dispositivo = '📱 Móvil';
+  } else if (/tablet/i.test(userAgent)) {
+    dispositivo = '📱 Tablet';
+  } else {
+    dispositivo = '💻 Computadora';
+  }
+
+  // Detectar navegador
+  let navegador = 'Navegador desconocido';
+  if (userAgent.includes('Edg')) navegador = '🔷 Edge';
+  else if (userAgent.includes('Chrome')) navegador = '🌐 Chrome';
+  else if (userAgent.includes('Firefox')) navegador = '🦊 Firefox';
+  else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) navegador = '🧭 Safari';
+  else if (userAgent.includes('Opera') || userAgent.includes('OPR')) navegador = '🎭 Opera';
+
+  // Detectar sistema operativo
+  let sistema = '';
+  if (userAgent.includes('Windows NT 10')) sistema = 'Windows 10/11';
+  else if (userAgent.includes('Windows NT 6.3')) sistema = 'Windows 8.1';
+  else if (userAgent.includes('Windows NT 6.2')) sistema = 'Windows 8';
+  else if (userAgent.includes('Windows NT 6.1')) sistema = 'Windows 7';
+  else if (userAgent.includes('Windows')) sistema = 'Windows';
+  else if (userAgent.includes('Mac OS X')) {
+    const match = userAgent.match(/Mac OS X ([\d_]+)/);
+    sistema = match ? `MacOS ${match[1].replace(/_/g, '.')}` : 'MacOS';
+  }
+  else if (userAgent.includes('Linux')) sistema = 'Linux';
+  else if (userAgent.includes('Android')) sistema = 'Android';
+  else if (userAgent.includes('iOS') || userAgent.includes('iPhone') || userAgent.includes('iPad')) sistema = 'iOS';
+
+  const fecha = new Date().toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const hora = new Date().toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  });
+
+  const details = {
+    fecha,
+    hora,
+    ubicacion: 'No disponible',
+    dispositivo: sistema ? `${dispositivo} (${sistema})` : dispositivo,
+    navegador,
+    ip: ip.replace('::ffff:', '').replace('::1', 'localhost')
+  };
+
+  console.log('✅ Detalles obtenidos:', details);
+  return details;
 };

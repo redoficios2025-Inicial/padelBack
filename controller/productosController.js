@@ -1,7 +1,7 @@
 // ============================================
 // 📁 src/controller/productosController.js
 // ============================================
-const Producto = require('../models/producto');
+const Producto = require('../models/Producto');
 
 // ============================================
 // 📋 Obtener todos los productos (ADMIN)
@@ -299,4 +299,5 @@ exports.eliminarProducto = async (req, res) => {
       error: error.message,
     });
   }
+
 };

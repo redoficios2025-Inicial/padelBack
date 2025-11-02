@@ -4,7 +4,12 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
-const { sendVerificationEmail, sendRecoveryEmail } = require('../utils/emailService');
+const { 
+  sendVerificationEmail, 
+  sendRecoveryEmail,
+  sendPasswordChangedEmail,  // 🆕 Agregar esta importación
+  getDeviceDetails            // 🆕 Agregar esta importación
+} = require('../utils/emailService');
 
 // Generar código de 6 dígitos
 const generateVerificationCode = () => {
@@ -115,7 +120,7 @@ exports.verifyEmail = async (req, res) => {
     // Generar token JWT
     const token = jwt.sign(
       { id: usuario._id, email: usuario.email },
-      'tu-secret-key-super-segura' || 'secret_key_default',
+      process.env.JWT_SECRET || 'tu-secret-key-super-segura',
       { expiresIn: '30d' }
     );
 
@@ -126,7 +131,8 @@ exports.verifyEmail = async (req, res) => {
       usuario: {
         id: usuario._id,
         nombre: usuario.nombre,
-        email: usuario.email
+        email: usuario.email,
+        rol: usuario.rol ?? 'usuario'
       }
     });
 
@@ -192,35 +198,45 @@ exports.recoverPassword = async (req, res) => {
 // ============================================
 exports.resetPassword = async (req, res) => {
   try {
+    console.log('🔄 Iniciando proceso de restablecimiento...');
+    console.log('📦 Body recibido:', req.body);
+
     const { email, code, newPassword } = req.body;
 
     if (!email || !code || !newPassword) {
+      console.log('❌ Faltan campos requeridos');
       return res.status(400).json({
         success: false,
         message: 'Todos los campos son requeridos'
       });
     }
 
+    console.log('🔍 Buscando usuario con email:', email, 'y código:', code);
     const usuario = await Usuario.findOne({ 
       email: email.toLowerCase(),
       recoveryCode: code
     });
 
     if (!usuario) {
+      console.log('❌ Usuario no encontrado o código inválido');
       return res.status(400).json({
         success: false,
         message: 'Código de recuperación inválido'
       });
     }
 
+    console.log('✅ Usuario encontrado:', usuario.nombre);
+
     // Verificar si el código expiró
     if (usuario.recoveryExpires < new Date()) {
+      console.log('❌ Código expirado');
       return res.status(400).json({
         success: false,
         message: 'El código de recuperación ha expirado'
       });
     }
 
+    console.log('🔐 Hasheando nueva contraseña...');
     // Hash de la nueva contraseña
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
@@ -230,6 +246,19 @@ exports.resetPassword = async (req, res) => {
     usuario.recoveryCode = undefined;
     usuario.recoveryExpires = undefined;
     await usuario.save();
+    console.log('✅ Contraseña actualizada en BD');
+
+    // 🆕 Obtener detalles del dispositivo y enviar email de confirmación
+    console.log('📧 Preparando email de confirmación...');
+    try {
+      const deviceDetails = getDeviceDetails(req);
+      await sendPasswordChangedEmail(email, usuario.nombre, deviceDetails);
+      console.log('✅ Email de confirmación enviado exitosamente');
+    } catch (emailError) {
+      console.error('⚠️ Error al enviar email de confirmación:', emailError);
+      console.error('⚠️ Detalles del error:', emailError.message);
+      // No fallamos la petición si el email falla, solo lo registramos
+    }
 
     res.json({
       success: true,
@@ -237,7 +266,7 @@ exports.resetPassword = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error al restablecer:', error);
+    console.error('❌ Error al restablecer:', error);
     res.status(500).json({
       success: false,
       message: 'Error al restablecer la contraseña'
@@ -289,22 +318,21 @@ exports.login = async (req, res) => {
     // Generar token JWT
     const token = jwt.sign(
       { id: usuario._id, email: usuario.email },
-      'tu-secret-key-super-segura' || 'secret_key_default',
+      process.env.JWT_SECRET || 'tu-secret-key-super-segura',
       { expiresIn: '30d' }
     );
 
-   res.json({
-  success: true,
-  message: 'Login exitoso',
-  token,
-  user: {   
-    id: usuario._id,
-    nombre: usuario.nombre,
-    email: usuario.email,
-    rol: usuario.rol ?? 'usuario'
-  }
-});
-
+    res.json({
+      success: true,
+      message: 'Login exitoso',
+      token,
+      user: {   
+        id: usuario._id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        rol: usuario.rol ?? 'usuario'
+      }
+    });
 
   } catch (error) {
     console.error('Error en login:', error);

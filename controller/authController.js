@@ -115,7 +115,7 @@ exports.verifyEmail = async (req, res) => {
     // Generar token JWT
     const token = jwt.sign(
       { id: usuario._id, email: usuario.email },
-      process.env.JWT_SECRET || 'secret_key_default',
+      'tu-secret-key-super-segura' || 'secret_key_default',
       { expiresIn: '30d' }
     );
 
@@ -289,7 +289,7 @@ exports.login = async (req, res) => {
     // Generar token JWT
     const token = jwt.sign(
       { id: usuario._id, email: usuario.email },
-      process.env.JWT_SECRET || 'secret_key_default',
+      'tu-secret-key-super-segura' || 'secret_key_default',
       { expiresIn: '30d' }
     );
 

@@ -1,21 +1,19 @@
+// ============================================
+// 📁 routes/productosAdminRoutes.js (CORREGIDO)
+// ============================================
 const express = require('express');
 const router = express.Router();
 const productosAdminController = require('../controller/productosAdminController');
+const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
 
-// Middleware simple de autenticación
-const authMiddleware = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (token === 'ADMIN_TOKEN_2024') {
-        next();
-    } else {
-        return res.status(401).json({ success: false, message: 'No autorizado' });
-    }
-};
-
-// Rutas
+// ✅ RUTAS PARA EL DASHBOARD (requieren autenticación JWT)
+// Admin puede ver todos los productos
 router.get('/', authMiddleware, productosAdminController.obtenerProductos);
-router.post('/', authMiddleware, productosAdminController.crearProducto);
-router.put('/', authMiddleware, productosAdminController.actualizarProducto);
-router.delete('/', authMiddleware, productosAdminController.eliminarProducto);
+
+// ✅ RUTAS PARA EL PANEL ADMIN (requieren ser admin)
+// Solo admin puede crear/editar/eliminar
+router.post('/', authMiddleware, adminMiddleware, productosAdminController.crearProducto);
+router.put('/', authMiddleware, adminMiddleware, productosAdminController.actualizarProducto);
+router.delete('/', authMiddleware, adminMiddleware, productosAdminController.eliminarProducto);
 
 module.exports = router;

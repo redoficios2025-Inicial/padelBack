@@ -90,6 +90,18 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+
+// ========================================
+// RUTA DE TEST
+// ========================================
+app.get('/api/test', (req, res) => {
+  res.json({
+    success: true,
+    message: '✅ Ruta /api/test funcionando correctamente',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // ========================================
 // MIDDLEWARES
 // ========================================
@@ -200,3 +212,4 @@ const startServer = async () => {
 };
 
 startServer();
+

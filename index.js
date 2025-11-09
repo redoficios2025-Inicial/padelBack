@@ -106,7 +106,10 @@ app.get('/api/test', (req, res) => {
 // MIDDLEWARES
 // ========================================
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: [
+    'http://localhost:3000',
+    'https://newpadel-teal.vercel.app'
+  ],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -212,4 +215,5 @@ const startServer = async () => {
 };
 
 startServer();
+
 

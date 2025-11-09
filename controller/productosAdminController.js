@@ -371,16 +371,57 @@ const crearProductoVendedores = async (productoAdmin) => {
   }
 };
 
-// Obtener todos los productos
+// ============================================
+// 📁 controller/productosAdminController.js
+// ============================================
 exports.obtenerProductos = async (req, res) => {
   try {
-    const productos = await ProductoAdmin.find().sort({ createdAt: -1 });
+    console.log('📦 Usuario solicitando productos:', {
+      id: req.user.id,
+      rol: req.user.rol,
+      nombre: req.user.nombre
+    });
+
+    let productos;
+
+    if (req.user.rol === 'admin') {
+      // ✅ Admin ve TODOS los productos de ambas colecciones
+      const productosAdmin = await ProductoAdmin.find().lean();
+      const productosVendedores = await Producto.find().lean();
+      
+      // Normalizar productos admin
+      const productosAdminNormalizados = productosAdmin.map(p => ({
+        ...p,
+        precio: p.precioAdminFijo || p.precio || 0,
+        precioFinal: p.precioAdminFijo || p.precio || 0,
+        productoAdmin: true,
+        productoVendedor: false
+      }));
+      
+      // Normalizar productos vendedores
+      const productosVendedoresNormalizados = productosVendedores.map(p => ({
+        ...p,
+        productoAdmin: false,
+        productoVendedor: true
+      }));
+      
+      // Combinar ambos
+      productos = [...productosAdminNormalizados, ...productosVendedoresNormalizados];
+      
+      console.log(`✅ Admin obtuvo ${productos.length} productos (${productosAdminNormalizados.length} admin + ${productosVendedoresNormalizados.length} vendedores)`);
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso denegado: Solo administradores'
+      });
+    }
+
     res.json({ success: true, data: productos });
   } catch (error) {
+    console.error('❌ Error en obtenerProductos:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 // Crear producto
 exports.crearProducto = async (req, res) => {
   try {

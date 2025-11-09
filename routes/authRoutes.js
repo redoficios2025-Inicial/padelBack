@@ -29,33 +29,20 @@
 
 // module.exports = router;
 
-// =========================================== 
-// 📁 src/routes/authRoutes.js
-// ===========================================
+// ============================================
+// 📁 routes/authRoutes.js (ACTUALIZADO)
+// ============================================
 const express = require('express');
 const router = express.Router();
-const { 
-  register, 
-  verifyEmail, 
-  recoverPassword, 
-  resetPassword,
-  login 
-} = require('../controller/authController');
+const authController = require('../controller/authController');
+const { authMiddleware } = require('../middleware/authMiddleware');
 
-// Registro de usuario
-router.post('/register', register);
+// Rutas públicas
+router.post('/login', authController.login);
+router.post('/register', authController.register);
 
-// Verificar email con código
-router.post('/verify-email', verifyEmail);
-
-// Recuperar contraseña (envía código)
-router.post('/recover-password', recoverPassword);
-
-// Restablecer contraseña con código
-router.post('/reset-password', resetPassword);
-
-// Login
-router.post('/login', login);
+// ✅ Ruta protegida para verificar token
+router.get('/verify', authMiddleware, authController.verifyToken);
 
 module.exports = router;
 

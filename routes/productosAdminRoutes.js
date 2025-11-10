@@ -13,9 +13,10 @@ router.get('/unico', authMiddleware, productosAdminController.obtenerProductosAd
 
 // ✅ RUTAS PARA EL PANEL ADMIN (requieren ser admin)
 // Solo admin puede crear/editar/eliminar
-router.post('/', authMiddleware, adminMiddleware, productosAdminController.crearProducto);
-router.put('/', authMiddleware, adminMiddleware, productosAdminController.actualizarProducto);
-router.delete('/', authMiddleware, adminMiddleware, productosAdminController.eliminarProducto);
+router.post('/unico', authMiddleware, adminMiddleware, productosAdminController.crearProducto);
+router.put('/unico', authMiddleware, adminMiddleware, productosAdminController.actualizarProducto);
+router.delete('/unico', authMiddleware, adminMiddleware, productosAdminController.eliminarProducto);
 
 module.exports = router;
+
 

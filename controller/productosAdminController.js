@@ -423,7 +423,6 @@ exports.obtenerProductos = async (req, res) => {
   }
 };
 
-
 // controllers/productosAdminController.js
 exports.obtenerProductosAdmin = async (req, res) => {
   try {
@@ -563,4 +562,5 @@ exports.eliminarProducto = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 

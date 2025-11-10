@@ -9,6 +9,7 @@ const { authMiddleware, adminMiddleware } = require('../middleware/authMiddlewar
 // ✅ RUTAS PARA EL DASHBOARD (requieren autenticación JWT)
 // Admin puede ver todos los productos
 router.get('/', authMiddleware, productosAdminController.obtenerProductos);
+router.get('/unico', authMiddleware, productosAdminController.obtenerProductosAdmin);
 
 // ✅ RUTAS PARA EL PANEL ADMIN (requieren ser admin)
 // Solo admin puede crear/editar/eliminar
@@ -17,3 +18,4 @@ router.put('/', authMiddleware, adminMiddleware, productosAdminController.actual
 router.delete('/', authMiddleware, adminMiddleware, productosAdminController.eliminarProducto);
 
 module.exports = router;
+

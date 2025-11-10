@@ -422,6 +422,40 @@ exports.obtenerProductos = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+// controllers/productosAdminController.js
+exports.obtenerProductosAdmin = async (req, res) => {
+  try {
+    console.log('📦 Obteniendo SOLO productos admin');
+
+    // Verificar que sea admin
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso denegado: Solo administradores'
+      });
+    }
+
+    // ✅ Traer todos los productos admin
+    const productosAdmin = await ProductoAdmin.find().lean();
+    console.log(`✅ ${productosAdmin.length} productos admin encontrados`);
+
+    res.json({ 
+      success: true, 
+      data: productosAdmin 
+    });
+  } catch (error) {
+    console.error('❌ Error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
+  }
+};
+
+
+
 // Crear producto
 exports.crearProducto = async (req, res) => {
   try {
@@ -529,3 +563,4 @@ exports.eliminarProducto = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
